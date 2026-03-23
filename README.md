@@ -94,20 +94,6 @@ npm run preview
 
 ---
 
-## Deploying to GitHub Pages
-
-```bash
-# One-time setup: set the base URL in vite.config.js
-# Change base: './' to base: '/your-repo-name/'
-
-# Deploy
-npm run deploy
-```
-
-This builds the app and pushes the `dist/` folder to the `gh-pages` branch. GitHub Pages will serve it at `https://your-username.github.io/your-repo-name/`.
-
----
-
 ## Airport Database
 
 The app includes coordinates for ~400 airports worldwide, covering Delta's domestic and international network. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
