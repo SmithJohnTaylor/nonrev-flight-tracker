@@ -59,7 +59,7 @@ export default function UploadZone({ onFile }) {
         <h3>Your privacy</h3>
         <ul>
           <li>Your file is processed <strong>entirely in your browser</strong> — no data is ever sent to a server</li>
-          <li>Employee IDs and other personal information are <strong>discarded immediately</strong> during parsing and never stored. Abbreviated name codes (e.g. SMI/L) are retained only when multiple travelers are detected, for filtering purposes.</li>
+          <li>Employee IDs and other personal information are <strong>discarded immediately</strong> during parsing and never stored. Abbreviated name codes (e.g. BAS/E) are retained only when multiple travelers are detected, for filtering purposes.</li>
           <li>No cookies, no local storage, no analytics, no tracking</li>
           <li>All flight data is cleared from memory when you close the tab, refresh, or click "Clear Data"</li>
         </ul>

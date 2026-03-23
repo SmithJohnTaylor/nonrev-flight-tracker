@@ -84,7 +84,7 @@ function looksLikeName(val) {
 }
 
 function normalizeName(val) {
-  // "SMI / L" → "SMI/L"
+  // "BAS / E" → "BAS/E"
   return val.trim().replace(/\s*\/\s*/, '/')
 }
 
