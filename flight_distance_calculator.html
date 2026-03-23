@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Distance Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .status.processing {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .status.complete {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .results-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ Flight Distance Calculator</h1>
+        
+        <div class="controls">
+            <button onclick="processFlights()" id="processBtn">Calculate Distances</button>
+            <button onclick="downloadCSV()" id="downloadBtn" disabled>Download CSV</button>
+            <button onclick="showSummary()" id="summaryBtn" disabled>Show Summary</button>
+        </div>
+
+        <div id="status"></div>
+        <div id="progressContainer" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div id="progressText"></div>
+        </div>
+
+        <div id="stats" class="stats" style="display: none;"></div>
+        
+        <div id="results" class="results-container" style="display: none;">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Route</th>
+                        <th>Origin</th>
+                        <th>Destination</th>
+                        <th>Distance (miles)</th>
+                        <th>Distance (km)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Airport coordinates database (major airports)
+        const airportCoords = {
+            'ATL': { lat: 33.6407, lng: -84.4277, name: 'Atlanta' },
+            'DUB': { lat: 53.4213, lng: -6.2701, name: 'Dublin' },
+            'IND': { lat: 39.7173, lng: -86.2944, name: 'Indianapolis' },
+            'CDG': { lat: 49.0097, lng: 2.5479, name: 'Paris CDG' },
+            'BOS': { lat: 42.3656, lng: -71.0096, name: 'Boston' },
+            'LGA': { lat: 40.7769, lng: -73.8740, name: 'New York LGA' },
+            'OGG': { lat: 20.8986, lng: -156.4307, name: 'Maui' },
+            'HNL': { lat: 21.3099, lng: -157.8581, name: 'Honolulu' },
+            'MIA': { lat: 25.7932, lng: -80.2906, name: 'Miami' },
+            'DTW': { lat: 42.2162, lng: -83.3554, name: 'Detroit' },
+            'CLT': { lat: 35.2144, lng: -80.9473, name: 'Charlotte' },
+            'RSW': { lat: 26.5362, lng: -81.7552, name: 'Fort Myers' },
+            'FLL': { lat: 26.0742, lng: -80.1506, name: 'Fort Lauderdale' },
+            'PLN': { lat: 45.5709, lng: -84.7967, name: 'Pellston' },
+            'SAN': { lat: 32.7336, lng: -117.1897, name: 'San Diego' },
+            'GRR': { lat: 42.8809, lng: -85.5228, name: 'Grand Rapids' },
+            'PDX': { lat: 45.5898, lng: -122.5951, name: 'Portland' },
+            'STL': { lat: 38.7487, lng: -90.3700, name: 'St. Louis' },
+            'CLE': { lat: 41.4117, lng: -81.8498, name: 'Cleveland' },
+            'PHX': { lat: 33.4343, lng: -112.0116, name: 'Phoenix' },
+            'BHM': { lat: 33.5629, lng: -86.7535, name: 'Birmingham' },
+            'SDF': { lat: 38.1740, lng: -85.7364, name: 'Louisville' },
+            'AMS': { lat: 52.3086, lng: 4.7639, name: 'Amsterdam' },
+            'MXP': { lat: 45.6306, lng: 8.7281, name: 'Milan' },
+            'LAS': { lat: 36.0840, lng: -115.1537, name: 'Las Vegas' },
+            'ORD': { lat: 41.9742, lng: -87.9073, name: 'Chicago O\'Hare' },
+            'LEX': { lat: 38.0365, lng: -84.6061, name: 'Lexington' },
+            'LAX': { lat: 33.9425, lng: -118.4081, name: 'Los Angeles' },
+            'SRQ': { lat: 27.3954, lng: -82.5544, name: 'Sarasota' },
+            'BNA': { lat: 36.1263, lng: -86.6774, name: 'Nashville' },
+            'TPA': { lat: 27.9755, lng: -82.5332, name: 'Tampa' },
+            'BWI': { lat: 39.1754, lng: -76.6683, name: 'Baltimore' },
+            'MKE': { lat: 43.0096, lng: -87.9073, name: 'Milwaukee' },
+            'CMH': { lat: 39.9980, lng: -82.8919, name: 'Columbus' },
+            'DCA': { lat: 38.8512, lng: -77.0402, name: 'Washington DC' },
+            'PIT': { lat: 40.4915, lng: -80.2329, name: 'Pittsburgh' },
+            'FWA': { lat: 40.9785, lng: -85.1951, name: 'Fort Wayne' },
+            'NAS': { lat: 25.0390, lng: -77.4660, name: 'Nassau' },
+            'RIC': { lat: 37.5052, lng: -77.3197, name: 'Richmond' },
+            'MDW': { lat: 41.7868, lng: -87.7522, name: 'Chicago Midway' },
+            'FNT': { lat: 42.9655, lng: -83.7436, name: 'Flint' },
+            'CVG': { lat: 39.0488, lng: -84.6678, name: 'Cincinnati' },
+            'SFO': { lat: 37.6213, lng: -122.3790, name: 'San Francisco' },
+            'IAD': { lat: 38.9531, lng: -77.4565, name: 'Washington Dulles' },
+            'ATH': { lat: 37.9364, lng: 23.9445, name: 'Athens' },
+            'JFK': { lat: 40.6413, lng: -73.7781, name: 'New York JFK' },
+            'PBI': { lat: 26.6832, lng: -80.0956, name: 'West Palm Beach' },
+            'UVF': { lat: 13.7333, lng: -60.9467, name: 'St. Lucia' },
+            'MEM': { lat: 35.0424, lng: -89.9767, name: 'Memphis' },
+            'SNA': { lat: 33.6757, lng: -117.8678, name: 'Orange County' },
+            'MSY': { lat: 29.9934, lng: -90.2581, name: 'New Orleans' },
+            'SEA': { lat: 47.4502, lng: -122.3088, name: 'Seattle' },
+            'KOA': { lat: 19.7389, lng: -156.0456, name: 'Kona' },
+            'SAV': { lat: 32.1276, lng: -81.2020, name: 'Savannah' },
+            'MAD': { lat: 40.4936, lng: -3.5668, name: 'Madrid' },
+            'DEN': { lat: 39.8561, lng: -104.6737, name: 'Denver' },
+            'BOI': { lat: 43.5644, lng: -116.2228, name: 'Boise' },
+            'GEG': { lat: 47.6198, lng: -117.5336, name: 'Spokane' },
+            'SLC': { lat: 40.7899, lng: -111.9791, name: 'Salt Lake City' },
+            'EUG': { lat: 44.1246, lng: -123.2113, name: 'Eugene' },
+            'EYW': { lat: 24.5561, lng: -81.7594, name: 'Key West' },
+            'ATW': { lat: 44.2581, lng: -88.5191, name: 'Appleton' },
+            'NRT': { lat: 35.7647, lng: 140.3864, name: 'Tokyo Narita' },
+            'ANC': { lat: 61.1744, lng: -149.9962, name: 'Anchorage' },
+            'KEF': { lat: 63.9850, lng: -22.6056, name: 'Reykjavik' },
+            'MSP': { lat: 44.8848, lng: -93.2223, name: 'Minneapolis' },
+            'EWR': { lat: 40.6895, lng: -74.1745, name: 'Newark' },
+            'RDU': { lat: 35.8776, lng: -78.7875, name: 'Raleigh' },
+            'PUJ': { lat: 18.5674, lng: -68.3634, name: 'Punta Cana' },
+            'CUN': { lat: 21.0365, lng: -86.8771, name: 'Cancun' },
+            'EZE': { lat: -34.8222, lng: -58.5358, name: 'Buenos Aires' },
+            'MCO': { lat: 28.4312, lng: -81.3081, name: 'Orlando' },
+            'VCE': { lat: 45.5053, lng: 12.3519, name: 'Venice' },
+            'CZM': { lat: 20.5225, lng: -86.9258, name: 'Cozumel' },
+            'DAY': { lat: 39.9024, lng: -84.2194, name: 'Dayton' },
+            'SYD': { lat: -33.9399, lng: 151.1753, name: 'Sydney' },
+            'STT': { lat: 18.3373, lng: -64.9733, name: 'St. Thomas' },
+            'HSV': { lat: 34.6417, lng: -86.7753, name: 'Huntsville' },
+            'FCO': { lat: 41.8003, lng: 12.2389, name: 'Rome' },
+            'ROC': { lat: 43.1189, lng: -77.6724, name: 'Rochester' },
+            'EVV': { lat: 38.0369, lng: -87.5324, name: 'Evansville' },
+            'SJU': { lat: 18.4394, lng: -66.0018, name: 'San Juan' },
+            'ORF': { lat: 36.8946, lng: -76.2012, name: 'Norfolk' },
+            'PHL': { lat: 39.8719, lng: -75.2411, name: 'Philadelphia' },
+            'ALB': { lat: 42.7483, lng: -73.8017, name: 'Albany' },
+            'MHT': { lat: 42.9326, lng: -71.4357, name: 'Manchester' },
+            'MLB': { lat: 28.1028, lng: -80.6453, name: 'Melbourne' },
+            'SJO': { lat: 9.9939, lng: -84.2088, name: 'San Jose CR' },
+            'AUA': { lat: 12.5014, lng: -70.0152, name: 'Aruba' },
+            'OAJ': { lat: 26.9512, lng: -81.3903, name: 'Jacksonville' },
+            'LHR': { lat: 51.4700, lng: -0.4543, name: 'London Heathrow' },
+            'TYS': { lat: 35.8111, lng: -83.9947, name: 'Knoxville' },
+            'FAY': { lat: 34.9912, lng: -78.8803, name: 'Fayetteville' }
+        };
+
+        let processedData = [];
+        let csvData = [];
+
+        // Parse CSV data on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadCSVData();
+        });
+
+        async function loadCSVData() {
+            // Use the data directly from your uploaded CSV
+            const csvContent = `DUB/ATL
+ATL/DUB
+IND/ATL
+ATL/IND
+CDG/BOS
+BOS/ATL
+ATL/CDG
+LGA/ATL
+ATL/LGA
+OGG/ATL
+ATL/HNL
+MIA/ATL
+ATL/MIA
+ATL/IND
+DTW/CLT
+CLT/ATL
+ATL/DTW
+RSW/ATL
+ATL/RSW
+FLL/ATL
+ATL/FLL
+PLN/DTW
+DTW/ATL
+ATL/DTW
+DTW/PLN
+SAN/ATL
+ATL/SAN
+ATL/GRR
+IND/ATL
+ATL/IND
+ATL/PDX
+ATL/DTW
+DTW/STL
+STL/ATL
+ATL/DTW
+ATL/DTW
+DTW/ATL
+ATL/CLE
+PHX/BHM
+BHM/ATL
+HNL/ATL
+ATL/HNL
+DTW/ATL
+ATL/DTW
+IND/ATL
+ATL/SDF
+AMS/ATL
+ATL/MXP
+LAS/ATL
+ATL/LAS
+ORD/ATL
+ATL/IND
+ATL/CLE
+IND/ATL
+ATL/IND
+DTW/LEX
+LEX/ATL
+ATL/DTW
+DTW/ATL
+ATL/DTW
+ATL/ORD
+DTW/ATL
+ATL/DTW
+ORD/ATL
+ATL/ORD
+DTW/ATL
+ATL/DTW
+LAX/ATL
+ATL/SAN
+ATL/SRQ
+BNA/ATL
+ATL/IND
+DTW/STL
+STL/ATL
+ATL/DTW
+DTW/ATL
+ATL/DTW
+IND/ATL
+ATL/IND
+SRQ/ATL
+ATL/TPA
+IND/ATL
+ATL/IND
+BWI/ATL
+ATL/BWI
+DTW/ATL
+ATL/DTW
+MKE/ATL
+ATL/ORD
+ATL/CMH
+CMH/ATL
+ATL/IND
+BWI/ATL
+ATL/DCA
+IND/ATL
+ATL/IND
+PIT/ATL
+ATL/PIT
+DTW/ATL
+FWA/ATL
+ATL/DTW
+NAS/ATL
+ATL/NAS
+IND/ATL
+ATL/IND
+DTW/ATL
+ATL/DTW
+PHX/ATL
+ATL/PHX
+PIT/ATL
+ATL/CLE
+SRQ/ATL
+ATL/SRQ
+RIC/ATL
+ATL/BWI
+MDW/ATL
+DTW/ORD
+ATL/DTW
+FNT/ATL
+ATL/DTW
+PIT/ATL
+ATL/PIT
+IND/ATL
+ATL/SDF
+CVG/DTW
+DTW/CVG
+CVG/ATL
+SFO/CVG
+DTW/SFO
+ATL/DTW
+FNT/ATL
+ATL/FNT
+ATL/IAD
+DCA/ATL
+ATH/JFK
+JFK/ATL
+MIA/ATL
+ATL/LGA
+JFK/ATH
+IND/ATL
+ATL/IND
+PBI/ATL
+ATL/FLL
+DTW/ATL
+ATL/DTW
+RIC/ATL
+ATL/RIC
+UVF/ATL
+ATL/UVF
+DTW/MEM
+MEM/ATL
+SNA/ATL
+ATL/SNA
+DTW/ATL
+ATL/FNT
+ATL/IND
+MSY/ATL
+ATL/DTW
+DTW/ATL
+DTW/MSY
+ATL/DTW
+PHX/ATL
+ATL/PHX
+IND/ATL
+ATL/IND
+SEA/ATL
+KOA/SEA
+ATL/LAX
+LAX/KOA
+ATL/IND
+IND/ATL
+ATL/DTW
+DTW/ATL
+ATL/DTW
+DTW/ATL
+DTW/ATL
+ATL/DTW
+ATL/DTW
+ATL/RIC
+PIT/ATL
+ATL/PIT
+DTW/ATL
+SAV/DTW
+ORD/ATL
+ATL/MAD
+ATL/SDF
+DTW/ATL
+ATL/IND
+DCA/ATL
+ATL/DCA
+IND/ATL
+ATL/IND
+DTW/ATL
+ATL/DTW
+IND/ATL
+ATL/DEN
+BOI/SEA
+SEA/ATL
+ATL/SEA
+SEA/GEG
+ATL/DTW
+SDF/ATL
+ATL/SDF
+SEA/ATL
+SLC/EUG
+EUG/SEA
+IND/ATL
+ATL/IND
+CMH/ATL
+ATL/DTW
+ATL/SFO
+LEX/ATL
+ATL/LEX
+CMH/ATL
+ATL/IND
+ATL/DEN
+IND/ATL
+ATL/IND
+BWI/ATL
+ATL/DCA
+LAX/ATL
+HNL/LAX
+SEA/HNL
+ATL/SEA
+ATL/EYW
+EYW/ATL
+ATW/ATL
+ATL/MKE
+SLC/STL
+STL/ATL
+ATL/SLC
+ATL/DTW
+DTW/ATL
+NRT/ATL
+DTW/NRT
+ATL/FNT
+DTW/ATL
+ATL/FNT
+IND/ATL
+ATL/IND
+RIC/ATL
+ATL/BWI
+ANC/ATL
+ATL/DEN
+KEF/MSP
+MSP/ATL
+ATL/EWR
+DTW/ATL
+ATL/DTW
+RDU/ATL
+ATL/RDU
+IND/ATL
+ATL/IND
+PUJ/ATL
+ATL/PUJ
+IND/ATL
+ATL/IND
+PHX/DTW
+DTW/LEX
+LEX/ATL
+ATL/MSY
+CUN/DTW
+DTW/ATL
+ATL/CUN
+MIA/ATL
+ATL/EZE
+MCO/ATL
+RIC/ATL
+ATL/RSW
+DTW/BWI
+PIT/ATL
+ATL/CLE
+ATL/SDF
+DTW/ATL
+ATL/FNT
+AMS/DTW
+DTW/ATL
+ATL/LGA
+JFK/VCE
+ATW/ATL
+ATL/ATW
+IND/ATL
+ATL/IND
+CMH/ATL
+ATL/DCA
+CZM/ATL
+ATL/CZM
+DTW/SDF
+SDF/ATL
+ATL/DTW
+CVG/ATL
+ATL/DAY
+PIT/ATL
+ATL/PIT
+BOS/ATL
+RIC/BOS
+ATL/RIC
+IND/ATL
+ATL/IND
+AMS/ATL
+ATL/JFK
+JFK/AMS
+LAX/DTW
+DTW/ATL
+ATL/LAX
+ATL/DCA
+LAX/ATL
+SYD/LAX
+ATL/MSY
+MSY/LAX
+LAX/SYD
+DAY/ATL
+ATL/CVG
+FNT/ATL
+ATL/DTW
+STT/ATL
+ATL/STT
+IND/ATL
+DTW/IND
+ATL/DTW
+SAV/ATL
+ATL/SAV
+DAY/ATL
+ATL/DAY
+HNL/ATL
+ATL/LAX
+LAX/HNL
+IND/ATL
+ATL/IND
+CVG/ATL
+ATL/CVG
+CLE/ATL
+ATL/CLE
+DTW/ATL
+ATL/DTW
+MDW/ATL
+ATL/ORD
+DTW/HSV
+HSV/ATL
+ATL/FNT
+CVG/ATL
+ATL/IND
+FNT/ATL
+FCO/JFK
+JFK/DTW
+DTW/FCO
+ATL/DTW
+LAS/ATL
+ATL/SFO
+LEX/ATL
+ATL/LEX
+DTW/STL
+STL/ATL
+ATL/DTW
+ROC/ATL
+ATL/ROC
+FNT/ATL
+ATL/FNT
+FWA/ATL
+ATL/IND
+CVG/ATL
+ATL/CVG
+CVG/ATL
+ATL/CVG
+FNT/ATL
+ATL/DTW
+MCO/ATL
+ATL/MCO
+CVG/ATL
+ATL/CVG
+RIC/ATL
+ATL/RIC
+EVV/ATL
+ATL/EVV
+DTW/ATL
+ATL/DTW
+SAN/ATL
+ATL/SAN
+DTW/ATL
+IND/DTW
+ATL/IND
+CVG/ATL
+ATL/DAY
+IND/ATL
+ATL/IND
+IND/ATL
+ATL/IND
+FNT/ATL
+ATL/DTW
+SFO/ATL
+ATL/SFO
+IND/ATL
+ATL/IND
+ATL/FNT
+FNT/ATL
+ATL/FNT
+FNT/ATL
+ATL/DTW
+SJU/ATL
+DTW/ATL
+ATL/SJU
+ORF/DTW
+DTW/BWI
+PHL/DTW
+DTW/PHL
+ATL/DTW
+DTW/ATL
+ATL/DTW
+IND/ATL
+DTW/IND
+ATL/DTW
+MIA/ATL
+ATL/MIA
+DTW/ATL
+ALB/DTW
+DTW/MHT
+FLL/DTW
+ATL/MLB
+DTW/ATL
+ATL/DTW
+DTW/ATL
+SJO/ATL
+ATL/FNT
+FNT/ATL
+ATL/SJO
+DCA/DTW
+IND/DTW
+DTW/RIC
+DTW/IND
+EYW/ATL
+ATL/FNT
+ATL/EYW
+FNT/ATL
+ATL/FNT
+FNT/ATL
+RDU/DTW
+DTW/RDU
+IND/DTW
+DTW/IND
+AUA/ATL
+ATL/FNT
+ATL/AUA
+FNT/ATL
+ATL/OAJ
+OAJ/ATL
+ATL/OAJ
+OAJ/ATL
+LHR/ATL
+DTW/ATL
+ATL/LHR
+DTW/IND
+PHX/DTW
+DTW/PHX
+ATL/FNT
+FNT/ATL
+RIC/DTW
+IND/ATL
+ATL/RIC
+BOS/IND
+DTW/BOS
+ATL/FNT
+FNT/ATL
+DTW/IND
+TYS/DTW
+DTW/IND
+IND/DTW
+DTW/IND
+ATL/FNT
+FNT/ATL
+ATL/FNT
+FNT/ATL
+IND/DTW
+DTW/IND
+IND/DTW
+ATL/IND
+LGA/DTW
+DTW/EWR
+ATL/IND
+IND/DTW
+HNL/ATL
+LAX/HNL
+DTW/CMH
+CMH/LAX
+IND/DTW
+DTW/IND
+RDU/DTW
+ATL/FAY
+DTW/ATL
+DTW/IND
+IND/DTW
+DCA/DTW
+DTW/DCA
+ATL/DTW
+DTW/ATL
+DTW/IND
+IND/DTW
+DTW/IND
+IND/DTW
+DTW/IND
+MCO/MEM
+MEM/DTW
+DTW/MCO
+ATL/FNT
+FNT/ATL
+ATL/DTW
+DTW/ATL
+ATL/MEM
+MEM/DTW
+DTW/ATL
+IND/DTW
+DTW/IND
+ORD/DTW
+DTW/MDW
+ATL/DTW
+DTW/ATL
+RIC/DTW
+DTW/IAD
+IND/DTW
+DTW/IND`;
+                
+                Papa.parse(csvContent, {
+                    complete: function(results) {
+                        csvData = results.data.filter(row => row[0] && row[0].trim() !== '');
+                        showStatus(`✅ Loaded ${csvData.length} flight routes successfully!`, 'complete');
+                        document.getElementById('processBtn').disabled = false;
+                    },
+                    error: function(error) {
+                        showStatus('Error parsing CSV: ' + error.message, 'error');
+                    }
+                });
+        }
+
+        function showStatus(message, type = 'processing') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function updateProgress(current, total) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const progressContainer = document.getElementById('progressContainer');
+            
+            progressContainer.style.display = 'block';
+            const percentage = (current / total) * 100;
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `Processing ${current} of ${total} routes (${Math.round(percentage)}%)`;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 3959; // Earth's radius in miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        async function processFlights() {
+            if (csvData.length === 0) {
+                showStatus('No data to process', 'error');
+                return;
+            }
+
+            document.getElementById('processBtn').disabled = true;
+            showStatus('Processing flight routes...', 'processing');
+            processedData = [];
+
+            let processed = 0;
+            const total = csvData.length;
+
+            for (let i = 0; i < csvData.length; i++) {
+                const row = csvData[i];
+                const route = row[0];
+                
+                if (route && route.includes('/')) {
+                    const [origin, destination] = route.split('/');
+                    
+                    const originCoords = airportCoords[origin];
+                    const destCoords = airportCoords[destination];
+                    
+                    let distanceMiles = 'N/A';
+                    let distanceKm = 'N/A';
+                    
+                    if (originCoords && destCoords) {
+                        distanceMiles = Math.round(calculateDistance(
+                            originCoords.lat, originCoords.lng,
+                            destCoords.lat, destCoords.lng
+                        ));
+                        distanceKm = Math.round(distanceMiles * 1.60934);
+                    }
+                    
+                    processedData.push({
+                        route: route,
+                        origin: origin,
+                        destination: destination,
+                        originName: originCoords?.name || origin,
+                        destName: destCoords?.name || destination,
+                        distanceMiles: distanceMiles,
+                        distanceKm: distanceKm
+                    });
+                }
+                
+                processed++;
+                if (processed % 10 === 0 || processed === total) {
+                    updateProgress(processed, total);
+                    await new Promise(resolve => setTimeout(resolve, 1)); // Allow UI to update
+                }
+            }
+
+            document.getElementById('progressContainer').style.display = 'none';
+            showStatus(`✅ Processed ${processedData.length} flight routes successfully!`, 'complete');
+            
+            displayResults();
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('summaryBtn').disabled = false;
+        }
+
+        function displayResults() {
+            const resultsBody = document.getElementById('resultsBody');
+            resultsBody.innerHTML = '';
+
+            processedData.forEach(flight => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${flight.route}</td>
+                    <td>${flight.origin} (${flight.originName})</td>
+                    <td>${flight.destination} (${flight.destName})</td>
+                    <td>${flight.distanceMiles}</td>
+                    <td>${flight.distanceKm}</td>
+                `;
+                resultsBody.appendChild(row);
+            });
+
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function showSummary() {
+            const validDistances = processedData.filter(f => f.distanceMiles !== 'N/A').map(f => f.distanceMiles);
+            const totalDistance = validDistances.reduce((sum, dist) => sum + dist, 0);
+            const avgDistance = validDistances.length > 0 ? totalDistance / validDistances.length : 0;
+            const maxDistance = validDistances.length > 0 ? Math.max(...validDistances) : 0;
+            const minDistance = validDistances.length > 0 ? Math.min(...validDistances) : 0;
+            
+            const uniqueAirports = new Set();
+            processedData.forEach(f => {
+                uniqueAirports.add(f.origin);
+                uniqueAirports.add(f.destination);
+            });
+
+            const statsDiv = document.getElementById('stats');
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${processedData.length}</div>
+                    <div class="stat-label">Total Routes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${uniqueAirports.size}</div>
+                    <div class="stat-label">Unique Airports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalDistance.toLocaleString()}</div>
+                    <div class="stat-label">Total Miles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${Math.round(avgDistance)}</div>
+                    <div class="stat-label">Average Distance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${maxDistance}</div>
+                    <div class="stat-label">Longest Route</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${minDistance}</div>
+                    <div class="stat-label">Shortest Route</div>
+                </div>
+            `;
+            statsDiv.style.display = 'grid';
+        }
+
+        function downloadCSV() {
+            if (processedData.length === 0) {
+                showStatus('No data to download', 'error');
+                return;
+            }
+
+            const csvContent = [
+                ['Route', 'Distance (miles)', 'Distance (km)'],
+                ...processedData.map(flight => [
+                    flight.route,
+                    flight.distanceMiles,
+                    flight.distanceKm
+                ])
+            ];
+
+            const csvString = Papa.unparse(csvContent);
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'flight_distances.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showStatus('CSV downloaded successfully!', 'complete');
+            }
+        }
+    </script>
+</body>
+</html>
