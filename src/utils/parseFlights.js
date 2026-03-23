@@ -78,6 +78,16 @@ function looksLikePriority(val) {
   return /^S[0-9A-Z]{1,2}$/i.test(val.trim())
 }
 
+function looksLikeName(val) {
+  if (!val) return false
+  return /^[A-Z]{3}\s*\/\s*[A-Z]$/i.test(val.trim())
+}
+
+function normalizeName(val) {
+  // "SMI / L" → "SMI/L"
+  return val.trim().replace(/\s*\/\s*/, '/')
+}
+
 /** Check several data rows to see if a column consistently matches a pattern. */
 function detectColumn(rows, startRow, testFn) {
   const numCols = rows[0]?.length || 0
@@ -102,6 +112,7 @@ function processRows(rows) {
   let dlFlightIdx = header.findIndex(h => h.includes('dl flight'))
   let priorityIdx = header.findIndex(h => h === 'priority')
   let flightNoIdx = header.findIndex(h => h === 'flight no' || h === 'flight_no' || h === '#')
+  let nameIdx = header.findIndex(h => h === 'name' || h === 'passenger' || h === 'traveler')
   let dataStartRow = 1
 
   // If no "Route" header found, fall back to content-based detection
@@ -115,6 +126,7 @@ function processRows(rows) {
   // For any columns not found by header, try content-based detection
   if (dateIdx === -1) dateIdx = detectColumn(rows, dataStartRow, looksLikeDate)
   if (priorityIdx === -1) priorityIdx = detectColumn(rows, dataStartRow, looksLikePriority)
+  if (nameIdx === -1) nameIdx = detectColumn(rows, dataStartRow, looksLikeName)
 
   const flights = []
 
@@ -140,8 +152,10 @@ function processRows(rows) {
       )
     }
 
+    const nameRaw = nameIdx >= 0 ? (row[nameIdx] || '').trim() : ''
     flights.push({
       id: i,
+      person: nameRaw && looksLikeName(nameRaw) ? normalizeName(nameRaw) : '',
       flightNo: flightNoIdx >= 0 ? (row[flightNoIdx] || '').trim() : '',
       dlFlightNo: dlFlightIdx >= 0 ? (row[dlFlightIdx] || '').trim() : '',
       priority: priorityIdx >= 0 ? (row[priorityIdx] || '').trim() : '',

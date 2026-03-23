@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const COLUMNS = [
+const BASE_COLUMNS = [
   { key: 'date', label: 'Date' },
   { key: 'route', label: 'Route' },
   { key: 'originName', label: 'From' },
@@ -10,6 +10,8 @@ const COLUMNS = [
   { key: 'distanceMiles', label: 'Miles' },
   { key: 'distanceKm', label: 'km' },
 ]
+
+const PERSON_COLUMN = { key: 'person', label: 'Traveler' }
 
 function sortFlights(flights, key, dir) {
   return [...flights].sort((a, b) => {
@@ -29,7 +31,8 @@ function sortFlights(flights, key, dir) {
 
 const PAGE_SIZE = 50
 
-export default function FlightTable({ flights }) {
+export default function FlightTable({ flights, multiPerson }) {
+  const COLUMNS = multiPerson ? [PERSON_COLUMN, ...BASE_COLUMNS] : BASE_COLUMNS
   const [sortKey, setSortKey] = useState('date')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)

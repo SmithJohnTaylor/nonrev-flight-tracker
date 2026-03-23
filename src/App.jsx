@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import UploadZone from './components/UploadZone.jsx'
 import StatsPanel from './components/StatsPanel.jsx'
 import YearFilter from './components/YearFilter.jsx'
+import PersonFilter from './components/PersonFilter.jsx'
 import FlightTable from './components/FlightTable.jsx'
 import RouteMap from './components/RouteMap.jsx'
 import { parseFile } from './utils/parseFlights.js'
@@ -11,6 +12,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState('all')
+  const [selectedPerson, setSelectedPerson] = useState('all')
 
   // Clear all data from memory when the user leaves or refreshes the page
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function App() {
       const parsed = await parseFile(file)
       setFlights(parsed)
       setSelectedYear('all')
+      setSelectedPerson('all')
     } catch (e) {
       setError(e.message || 'Failed to parse CSV')
     } finally {
@@ -37,6 +40,7 @@ export default function App() {
     setFlights(null)
     setError('')
     setSelectedYear('all')
+    setSelectedPerson('all')
   }
 
   const years = useMemo(() => {
@@ -44,11 +48,18 @@ export default function App() {
     return [...new Set(flights.map(f => f.year).filter(Boolean))].sort((a, b) => b - a)
   }, [flights])
 
+  const people = useMemo(() => {
+    if (!flights) return []
+    return [...new Set(flights.map(f => f.person).filter(Boolean))].sort()
+  }, [flights])
+
   const filtered = useMemo(() => {
     if (!flights) return []
-    if (selectedYear === 'all') return flights
-    return flights.filter(f => f.year === selectedYear)
-  }, [flights, selectedYear])
+    let result = flights
+    if (selectedPerson !== 'all') result = result.filter(f => f.person === selectedPerson)
+    if (selectedYear !== 'all') result = result.filter(f => f.year === selectedYear)
+    return result
+  }, [flights, selectedYear, selectedPerson])
 
   if (loading) {
     return (
@@ -86,8 +97,12 @@ export default function App() {
       </header>
 
       <main className="dash-main">
+        {people.length > 1 && (
+          <PersonFilter people={people} selected={selectedPerson} onChange={setSelectedPerson} />
+        )}
+
         {years.length > 1 && (
-          <YearFilter years={years} selected={selectedYear} onChange={y => { setSelectedYear(y) }} />
+          <YearFilter years={years} selected={selectedYear} onChange={setSelectedYear} />
         )}
 
         <StatsPanel flights={filtered} allFlights={flights} selectedYear={selectedYear} />
@@ -96,7 +111,7 @@ export default function App() {
 
         <section className="table-section-wrap">
           <h2 className="section-title">Flight Log</h2>
-          <FlightTable flights={filtered} />
+          <FlightTable flights={filtered} multiPerson={people.length > 1} />
         </section>
       </main>
 
