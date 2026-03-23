@@ -61,7 +61,9 @@ export default function StatsPanel({ flights, allFlights, selectedYear }) {
         <div className="year-breakdown">
           <h3>Year by Year</h3>
           <div className="year-breakdown-grid">
-            {yearBreakdown.map(({ year, flights: f, miles }) => (
+            {(() => {
+              const maxMiles = Math.max(...yearBreakdown.map(y => y.miles))
+              return yearBreakdown.map(({ year, flights: f, miles }) => (
               <div key={year} className="year-breakdown-row">
                 <span className="yb-year">{year}</span>
                 <span className="yb-flights">{f} flights</span>
@@ -69,13 +71,14 @@ export default function StatsPanel({ flights, allFlights, selectedYear }) {
                   <div
                     className="yb-bar"
                     style={{
-                      width: `${Math.round((miles / yearBreakdown[0].miles) * 100)}%`,
+                      width: `${Math.round((miles / maxMiles) * 100)}%`,
                     }}
                   />
                 </div>
                 <span className="yb-miles">{miles.toLocaleString()} mi</span>
               </div>
-            ))}
+            ))
+            })()}
           </div>
         </div>
       )}
