@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from 'react-leaflet'
 import { greatCirclePoints, splitAtAntimeridian } from '../utils/distance.js'
 
@@ -18,7 +18,19 @@ function buildRouteData(flights) {
   return { routeCounts, airportCounts }
 }
 
+function useDarkMode() {
+  const [dark, setDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = e => setDark(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return dark
+}
+
 export default function RouteMap({ flights }) {
+  const dark = useDarkMode()
   const { routeCounts, airportCounts } = useMemo(() => buildRouteData(flights), [flights])
   const maxCount = Math.max(...Object.values(routeCounts), 1)
   const maxAirport = Math.max(...Object.values(airportCounts), 1)
@@ -72,7 +84,11 @@ export default function RouteMap({ flights }) {
           minZoom={1}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            key={dark ? 'dark' : 'light'}
+            url={dark
+              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+              : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+            }
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             subdomains="abcd"
             maxZoom={19}
