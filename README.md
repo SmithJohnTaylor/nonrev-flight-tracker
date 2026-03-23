@@ -8,6 +8,14 @@ Upload your flight history CSV from DeltaNet and instantly see total miles flown
 
 ---
 
+## Screenshots
+
+![Flight data dashboard](images/flight_data.png)
+
+![World route map](images/world_map.png)
+
+---
+
 ## Features
 
 - **Drag-and-drop CSV upload** — works with your DeltaNet non-rev history export
