@@ -22,7 +22,7 @@ export default function StatsPanel({ flights, allFlights, selectedYear }) {
   const yearBreakdown = []
   if (selectedYear === 'all') {
     const byYear = {}
-    allFlights.forEach(f => {
+    flights.forEach(f => {
       if (!f.year) return
       if (!byYear[f.year]) byYear[f.year] = { flights: 0, miles: 0 }
       byYear[f.year].flights++
