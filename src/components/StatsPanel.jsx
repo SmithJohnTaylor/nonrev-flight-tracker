@@ -14,6 +14,8 @@ export default function StatsPanel({ flights, allFlights, selectedYear }) {
     ? withDist.reduce((a, b) => (a.distanceMiles > b.distanceMiles ? a : b))
     : null
   const avgMiles = withDist.length ? Math.round(totalMiles / withDist.length) : 0
+  const earthCircumference = 24901
+  const timesAroundWorld = (totalMiles / earthCircumference).toFixed(1)
   const unknownCount = flights.filter(f => f.unknownAirport).length
 
   // Year-by-year breakdown (only shown for "all")
@@ -36,8 +38,9 @@ export default function StatsPanel({ flights, allFlights, selectedYear }) {
       <div className="stat-cards">
         <StatCard value={flights.length.toLocaleString()} label="Flights" />
         <StatCard value={totalMiles.toLocaleString()} label="Total Miles" />
+        <StatCard value={`${timesAroundWorld}×`} label="Times Around the World" />
         <StatCard value={avgMiles.toLocaleString()} label="Avg Miles / Flight" />
-        <StatCard value={uniqueAirports.size} label="Airports Visited" />
+        <StatCard value={uniqueAirports.size} label="Unique Airports" />
         <StatCard value={countries.size} label="Countries" />
         {maxFlight && (
           <StatCard
