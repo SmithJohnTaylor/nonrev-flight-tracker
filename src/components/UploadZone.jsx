@@ -50,23 +50,16 @@ export default function UploadZone({ onFile }) {
       {error && <p className="upload-error">{error}</p>}
 
       <div className="upload-instructions">
-        <h3>How to export your flight history from Delta Net</h3>
-        <ol>
-          <li>Log in to <strong>DeltaNet</strong></li>
-          <li>Go to <strong>Travel &gt; Non-Rev History</strong></li>
-          <li>Export or download your history as a <strong>CSV or Excel file</strong></li>
-          <li>Drop the file above</li>
-        </ol>
         <p className="instructions-note">
           Expects a <code>Route</code> column with values like <code>ATL/DTW</code>. Other columns
-          (<code>Date</code>, <code>DL Flight No</code>, <code>Priority</code>) are optional.
+          (<code>Date</code>, <code>DL Flight No</code>, <code>Priority</code>) are detected automatically if present.
         </p>
       </div>
 
       <div className="privacy-details">
         <h3>Your privacy</h3>
         <ul>
-          <li>Your CSV is processed <strong>entirely in your browser</strong> — no data is ever sent to a server</li>
+          <li>Your file is processed <strong>entirely in your browser</strong> — no data is ever sent to a server</li>
           <li>Names, employee IDs, and other personal information are <strong>discarded immediately</strong> during parsing and never stored</li>
           <li>No cookies, no local storage, no analytics, no tracking</li>
           <li>All flight data is cleared from memory when you close the tab, refresh, or click "Clear Data"</li>
