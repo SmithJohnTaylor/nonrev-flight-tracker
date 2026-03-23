@@ -1,6 +1,6 @@
 // Comprehensive airport database: IATA -> { name, city, country, lat, lng }
 export const AIRPORTS = {
-  // ── US: Delta Hubs ──────────────────────────────────────────────────────────
+  // ── US: Major Hubs ──────────────────────────────────────────────────────────
   ATL: { name: 'Hartsfield-Jackson Atlanta Intl', city: 'Atlanta', country: 'US', lat: 33.6407, lng: -84.4277 },
   DTW: { name: 'Detroit Metropolitan Wayne County', city: 'Detroit', country: 'US', lat: 42.2162, lng: -83.3554 },
   MSP: { name: 'Minneapolis-Saint Paul Intl', city: 'Minneapolis', country: 'US', lat: 44.8848, lng: -93.2223 },

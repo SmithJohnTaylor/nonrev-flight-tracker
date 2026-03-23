@@ -1,10 +1,10 @@
 # NonRev Flight Tracker
 
-A privacy-first web app for Delta Air Lines employees to calculate the total miles flown using non-rev travel benefits.
+A privacy-first web app for airline employees to calculate the total miles flown using non-rev travel benefits.
 
-Upload your flight history CSV from DeltaNet and instantly see total miles flown, year-by-year breakdowns, a world route map, and a full searchable flight log — all without your data ever leaving your browser.
+Upload your flight history CSV or Excel file and instantly see total miles flown, year-by-year breakdowns, a world route map, and a full searchable flight log — all without your data ever leaving your browser.
 
-> **Other airlines:** This app was built and tested with Delta non-rev data. It may work with flight history exports from other airlines if the CSV contains a route column formatted as `AAA/BBB` (IATA origin/destination). Other column names like `Date` and flight number are auto-detected where possible. That said, this hasn't been tested with other carriers' exports, so your _mileage_ may vary.
+> **Airline compatibility:** This app should work with any airline's non-rev history export as long as it contains a route column formatted as `AAA/BBB` (IATA origin/destination). Other column names like `Date` and flight number are auto-detected where possible.
 
 ---
 
@@ -18,25 +18,23 @@ Upload your flight history CSV from DeltaNet and instantly see total miles flown
 
 ## Features
 
-- **Drag-and-drop CSV upload** — works with your DeltaNet non-rev history export
+- **Drag-and-drop upload** — CSV or Excel (.xlsx) non-rev history export
 - **Distance calculation** — great-circle miles and kilometers for every route
 - **Stats dashboard** — total flights, total miles, unique airports, countries visited, longest flight, and more
 - **Year-by-year breakdown** — filter by any year to see annual totals
 - **Route map** — interactive world map with great-circle arcs; thicker lines and larger dots indicate more frequently flown routes
-- **Flight log** — full sortable table of every flight with date, route, Delta flight number, priority, and distance
+- **Flight log** — full sortable table of every flight with date, route, flight number, priority, and distance
 - **100% private** — no data is uploaded, stored, or transmitted; everything runs in your browser and is cleared when you close the tab
 
 ---
 
 ## Using the App
 
-### 1. Export your flight history from DeltaNet
+### 1. Export your flight history
 
-1. Log in to **DeltaNet**
-2. Navigate to **Travel > Non-Rev History**
-3. Export your history as a **CSV file**
+Export your non-rev flight history from your airline's employee portal as a CSV or Excel file.
 
-### 2. Upload your CSV
+### 2. Upload your file
 
 Drop the file onto the upload zone or click to browse. The app auto-detects columns by name, so it will work even if your export has extra columns or the columns aren't labeled. At minimum, a `Route` column with values like `ATL/DTW` is required.
 
@@ -46,7 +44,7 @@ Drop the file onto the upload zone or click to browse. The app auto-detects colu
 |---|---|
 | `Route` | Origin/destination in `AAA/BBB` format — **required** |
 | `Date` | Flight date (`M/D/YYYY` or `YYYY-MM-DD`) |
-| `DL Flight No` | Delta flight number |
+| `DL Flight No` | Flight number |
 | `Priority` | Non-rev priority class (e.g. `S2`, `S3`) |
 
 ### 3. Explore your results
@@ -96,7 +94,7 @@ npm run preview
 
 ## Airport Database
 
-The app includes coordinates for ~400 airports worldwide, covering Delta's domestic and international network. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
+The app includes coordinates for ~400 airports worldwide, covering major domestic and international routes. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
 
 To report a missing airport, open an issue with the IATA code and airport name.
 

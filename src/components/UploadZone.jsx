@@ -20,7 +20,7 @@ export default function UploadZone({ onFile }) {
       <div className="upload-header">
         <div className="logo">✈</div>
         <h1>NonRev Flight Tracker</h1>
-        <p className="subtitle">Calculate miles flown on Delta non-rev benefits</p>
+        <p className="subtitle">Calculate miles flown on your non-rev benefits</p>
         <div className="privacy-badge">🔒 100% private — nothing is uploaded, stored, or tracked</div>
       </div>
 
