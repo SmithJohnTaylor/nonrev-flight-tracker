@@ -15,6 +15,7 @@ function parseDate(raw) {
     ;[m, d, y] = parts.map(Number)
   }
   if (!y || !m || !d) return null
+  if (y < 100) y += 2000
   const date = new Date(y, m - 1, d)
   return isNaN(date) ? null : date
 }
