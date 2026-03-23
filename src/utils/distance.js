@@ -48,8 +48,19 @@ export function splitAtAntimeridian(points) {
   for (let i = 0; i < points.length; i++) {
     segments[segments.length - 1].push(points[i])
     if (i < points.length - 1) {
-      const dLng = Math.abs(points[i + 1][1] - points[i][1])
-      if (dLng > 180) segments.push([])
+      const [lat1, lng1] = points[i]
+      const [lat2, lng2] = points[i + 1]
+      const dLng = lng2 - lng1
+      if (Math.abs(dLng) > 180) {
+        // Normalize lng2 onto the same side as lng1 to interpolate correctly
+        const lng2n = dLng > 0 ? lng2 - 360 : lng2 + 360
+        const boundary = lng1 > 0 ? 180 : -180
+        const t = (boundary - lng1) / (lng2n - lng1)
+        const crossLat = lat1 + t * (lat2 - lat1)
+        // Close current segment at the antimeridian, open next from the other side
+        segments[segments.length - 1].push([crossLat, boundary])
+        segments.push([[crossLat, -boundary]])
+      }
     }
   }
   return segments.filter(s => s.length >= 2)
