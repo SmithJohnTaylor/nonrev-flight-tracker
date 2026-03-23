@@ -4,7 +4,7 @@ import StatsPanel from './components/StatsPanel.jsx'
 import YearFilter from './components/YearFilter.jsx'
 import FlightTable from './components/FlightTable.jsx'
 import RouteMap from './components/RouteMap.jsx'
-import { parseCSV } from './utils/parseFlights.js'
+import { parseFile } from './utils/parseFlights.js'
 
 export default function App() {
   const [flights, setFlights] = useState(null)
@@ -23,7 +23,7 @@ export default function App() {
     setLoading(true)
     setError('')
     try {
-      const parsed = await parseCSV(file)
+      const parsed = await parseFile(file)
       setFlights(parsed)
       setSelectedYear('all')
     } catch (e) {

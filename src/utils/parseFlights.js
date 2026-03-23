@@ -1,4 +1,5 @@
 import Papa from 'papaparse'
+import * as XLSX from 'xlsx'
 import { AIRPORTS } from '../data/airports.js'
 import { haversine } from './distance.js'
 
@@ -23,7 +24,7 @@ function formatDate(date) {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-export function parseCSV(file) {
+function parseCSV(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: false,
@@ -31,8 +32,7 @@ export function parseCSV(file) {
       complete: ({ data }) => {
         try {
           const result = processRows(data)
-          // Immediately discard the raw CSV rows so PII (names, employee IDs)
-          // is not retained in memory — only the sanitized flight objects remain.
+          // Discard raw rows so PII (names, employee IDs) is not retained in memory
           data.length = 0
           resolve(result)
         } catch (e) {
@@ -43,6 +43,23 @@ export function parseCSV(file) {
       error: reject,
     })
   })
+}
+
+async function parseXLSX(file) {
+  const buffer = await file.arrayBuffer()
+  const workbook = XLSX.read(buffer, { type: 'array', cellDates: true })
+  const sheet = workbook.Sheets[workbook.SheetNames[0]]
+  // Get as array of arrays; raw: false gives formatted strings for dates
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false })
+  const result = processRows(rows)
+  rows.length = 0
+  return result
+}
+
+export function parseFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase()
+  if (ext === 'xlsx' || ext === 'xls') return parseXLSX(file)
+  return parseCSV(file)
 }
 
 function looksLikeRoute(val) {

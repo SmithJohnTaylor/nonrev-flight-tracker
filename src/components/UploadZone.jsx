@@ -7,8 +7,8 @@ export default function UploadZone({ onFile }) {
 
   function handleFile(file) {
     if (!file) return
-    if (!file.name.endsWith('.csv')) {
-      setError('Please upload a .csv file')
+    if (!/\.(csv|xlsx|xls)$/i.test(file.name)) {
+      setError('Please upload a .csv or .xlsx file')
       return
     }
     setError('')
@@ -36,12 +36,12 @@ export default function UploadZone({ onFile }) {
         }}
       >
         <div className="drop-icon">📂</div>
-        <p className="drop-title">Drop your flight history CSV here</p>
-        <p className="drop-sub">or click to browse</p>
+        <p className="drop-title">Drop your flight history file here</p>
+        <p className="drop-sub">CSV or Excel (.xlsx) · click to browse</p>
         <input
           ref={inputRef}
           type="file"
-          accept=".csv"
+          accept=".csv,.xlsx,.xls"
           style={{ display: 'none' }}
           onChange={e => handleFile(e.target.files[0])}
         />
@@ -54,7 +54,7 @@ export default function UploadZone({ onFile }) {
         <ol>
           <li>Log in to <strong>DeltaNet</strong></li>
           <li>Go to <strong>Travel &gt; Non-Rev History</strong></li>
-          <li>Export or download your history as a <strong>CSV file</strong></li>
+          <li>Export or download your history as a <strong>CSV or Excel file</strong></li>
           <li>Drop the file above</li>
         </ol>
         <p className="instructions-note">
