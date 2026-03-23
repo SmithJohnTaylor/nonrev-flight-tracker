@@ -4,6 +4,8 @@ A privacy-first web app for Delta Air Lines employees to calculate the total mil
 
 Upload your flight history CSV from DeltaNet and instantly see total miles flown, year-by-year breakdowns, a world route map, and a full searchable flight log — all without your data ever leaving your browser.
 
+> **Other airlines:** This app was built and tested with Delta non-rev data. It may work with flight history exports from other airlines if the CSV contains a route column formatted as `AAA/BBB` (IATA origin/destination). Other column names like `Date` and flight number are auto-detected where possible. That said, this hasn't been tested with other carriers' exports, so your mileage may vary.
+
 ---
 
 ## Features
