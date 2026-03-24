@@ -3,12 +3,23 @@ import { useState } from 'react'
 export default function PersonFilter({ people, selected, onChange }) {
   const [open, setOpen] = useState(false)
 
-  function select(val) {
-    onChange(selected === val ? 'all' : val)
+  function toggle(val) {
+    if (selected.includes(val)) {
+      const next = selected.filter(p => p !== val)
+      onChange(next)
+    } else {
+      onChange([...selected, val])
+    }
+  }
+
+  function selectAll() {
+    onChange([])
     setOpen(false)
   }
 
-  const label = selected === 'all' ? 'All Travelers' : selected
+  let label = 'All Travelers'
+  if (selected.length === 1) label = selected[0]
+  else if (selected.length > 1) label = `${selected.length} travelers`
 
   return (
     <div className="year-filter">
@@ -18,15 +29,25 @@ export default function PersonFilter({ people, selected, onChange }) {
       >
         {label} {open ? '▴' : '▾'}
       </button>
-      {open && people.map(p => (
-        <button
-          key={p}
-          className={`year-btn ${selected === p ? 'active' : ''}`}
-          onClick={() => select(p)}
-        >
-          {p}
-        </button>
-      ))}
+      {open && (
+        <>
+          <button
+            className={`year-btn ${selected.length === 0 ? 'active' : ''}`}
+            onClick={selectAll}
+          >
+            All
+          </button>
+          {people.map(p => (
+            <button
+              key={p}
+              className={`year-btn ${selected.includes(p) ? 'active' : ''}`}
+              onClick={() => toggle(p)}
+            >
+              {p}
+            </button>
+          ))}
+        </>
+      )}
     </div>
   )
 }

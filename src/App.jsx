@@ -12,7 +12,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState('all')
-  const [selectedPerson, setSelectedPerson] = useState('all')
+  const [selectedPeople, setSelectedPeople] = useState([])
   const [shareLabel, setShareLabel] = useState('Share')
 
   // Clear all data from memory when the user leaves or refreshes the page
@@ -29,7 +29,7 @@ export default function App() {
       const parsed = await parseFile(file)
       setFlights(parsed)
       setSelectedYear('all')
-      setSelectedPerson('all')
+      setSelectedPeople([])
     } catch (e) {
       setError(e.message || 'Failed to parse file')
     } finally {
@@ -67,7 +67,7 @@ export default function App() {
     setFlights(null)
     setError('')
     setSelectedYear('all')
-    setSelectedPerson('all')
+    setSelectedPeople([])
   }
 
   const years = useMemo(() => {
@@ -83,10 +83,10 @@ export default function App() {
   const filtered = useMemo(() => {
     if (!flights) return []
     let result = flights
-    if (selectedPerson !== 'all') result = result.filter(f => f.person === selectedPerson)
+    if (selectedPeople.length > 0) result = result.filter(f => selectedPeople.includes(f.person))
     if (selectedYear !== 'all') result = result.filter(f => f.year === selectedYear)
     return result
-  }, [flights, selectedYear, selectedPerson])
+  }, [flights, selectedYear, selectedPeople])
 
   if (loading) {
     return (
@@ -136,7 +136,7 @@ export default function App() {
 
       <main className="dash-main">
         {people.length > 1 && (
-          <PersonFilter people={people} selected={selectedPerson} onChange={setSelectedPerson} />
+          <PersonFilter people={people} selected={selectedPeople} onChange={setSelectedPeople} />
         )}
 
         {years.length > 1 && (
@@ -149,7 +149,7 @@ export default function App() {
 
         <section className="table-section-wrap">
           <h2 className="section-title">Flight Log</h2>
-          <FlightTable flights={filtered} multiPerson={people.length > 1} />
+          <FlightTable flights={filtered} multiPerson={people.length > 1 && selectedPeople.length !== 1} />
         </section>
       </main>
 
