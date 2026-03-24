@@ -3,6 +3,7 @@ import UploadZone from './components/UploadZone.jsx'
 import StatsPanel from './components/StatsPanel.jsx'
 import YearFilter from './components/YearFilter.jsx'
 import PersonFilter from './components/PersonFilter.jsx'
+import PriorityFilter from './components/PriorityFilter.jsx'
 import FlightTable from './components/FlightTable.jsx'
 import RouteMap from './components/RouteMap.jsx'
 import { parseFile } from './utils/parseFlights.js'
@@ -13,6 +14,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState('all')
   const [selectedPeople, setSelectedPeople] = useState([])
+  const [selectedPriorities, setSelectedPriorities] = useState([])
   const [shareLabel, setShareLabel] = useState('Share')
 
   // Clear all data from memory when the user leaves or refreshes the page
@@ -30,6 +32,7 @@ export default function App() {
       setFlights(parsed)
       setSelectedYear('all')
       setSelectedPeople([])
+      setSelectedPriorities([])
     } catch (e) {
       setError(e.message || 'Failed to parse file')
     } finally {
@@ -68,6 +71,7 @@ export default function App() {
     setError('')
     setSelectedYear('all')
     setSelectedPeople([])
+    setSelectedPriorities([])
   }
 
   const years = useMemo(() => {
@@ -80,13 +84,19 @@ export default function App() {
     return [...new Set(flights.map(f => f.person).filter(Boolean))].sort()
   }, [flights])
 
+  const priorities = useMemo(() => {
+    if (!flights) return []
+    return [...new Set(flights.map(f => f.priority).filter(Boolean))].sort()
+  }, [flights])
+
   const filtered = useMemo(() => {
     if (!flights) return []
     let result = flights
     if (selectedPeople.length > 0) result = result.filter(f => selectedPeople.includes(f.person))
+    if (selectedPriorities.length > 0) result = result.filter(f => selectedPriorities.includes(f.priority))
     if (selectedYear !== 'all') result = result.filter(f => f.year === selectedYear)
     return result
-  }, [flights, selectedYear, selectedPeople])
+  }, [flights, selectedYear, selectedPeople, selectedPriorities])
 
   if (loading) {
     return (
@@ -141,6 +151,10 @@ export default function App() {
 
         {years.length > 1 && (
           <YearFilter years={years} selected={selectedYear} onChange={setSelectedYear} />
+        )}
+
+        {priorities.length > 1 && (
+          <PriorityFilter priorities={priorities} selected={selectedPriorities} onChange={setSelectedPriorities} />
         )}
 
         <StatsPanel flights={filtered} allFlights={flights} selectedYear={selectedYear} />
