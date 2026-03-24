@@ -86,6 +86,14 @@ export default function App() {
           <span className="logo-sm">✈</span>
           <h1>NonRev Flight Tracker</h1>
         </div>
+        <a
+          className="bmc-btn"
+          href="https://www.buymeacoffee.com/jtsmith"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ☕ Buy me an espresso
+        </a>
         <div className="dash-actions">
           <span className="file-stats">
             {flights.length.toLocaleString()} flights loaded

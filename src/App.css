@@ -152,6 +152,22 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
 .logo-sm { font-size: 22px; }
 .dash-title h1 { font-size: 1.2rem; font-weight: 700; }
 .dash-actions { display: flex; align-items: center; gap: 16px; }
+.bmc-btn {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFDD00;
+  color: #000;
+  border: 1.5px solid #000;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.bmc-btn:hover { opacity: 0.85; }
 .file-stats { color: var(--muted); font-size: 0.85rem; }
 .clear-btn {
   background: transparent;
@@ -310,6 +326,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
 
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
+  .bmc-btn { display: none; }
   .dash-header { flex-wrap: wrap; gap: 8px; }
   .stat-cards { grid-template-columns: repeat(2, 1fr); }
   .year-breakdown-row { grid-template-columns: 50px 90px 1fr; }
