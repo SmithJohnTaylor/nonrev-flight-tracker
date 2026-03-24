@@ -4,7 +4,7 @@ export default function YearFilter({ years, selected, onChange }) {
   const [open, setOpen] = useState(false)
 
   function select(val) {
-    onChange(val)
+    onChange(selected === val ? 'all' : val)
     setOpen(false)
   }
 
