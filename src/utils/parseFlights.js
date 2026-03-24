@@ -88,6 +88,16 @@ function normalizeName(val) {
   return val.trim().replace(/\s*\/\s*/, '/')
 }
 
+function looksLikePassRider(val) {
+  if (!val) return false
+  return /^\d{5,}-\d{2}$/.test(val.trim())
+}
+
+function extractSuffix(val) {
+  const match = val.trim().match(/-(\d{2})$/)
+  return match ? match[1] : ''
+}
+
 /** Check several data rows to see if a column consistently matches a pattern. */
 function detectColumn(rows, startRow, testFn) {
   const numCols = rows[0]?.length || 0
@@ -113,6 +123,7 @@ function processRows(rows) {
   let priorityIdx = header.findIndex(h => h === 'priority')
   let flightNoIdx = header.findIndex(h => h === 'flight no' || h === 'flight_no' || h === '#')
   let nameIdx = header.findIndex(h => h === 'name' || h === 'passenger' || h === 'traveler')
+  let passRiderIdx = header.findIndex(h => h.includes('pass rider') || h.includes('employee') || h === 'emp #' || h === 'emp')
   let dataStartRow = 1
 
   // If no "Route" header found, fall back to content-based detection
@@ -127,6 +138,7 @@ function processRows(rows) {
   if (dateIdx === -1) dateIdx = detectColumn(rows, dataStartRow, looksLikeDate)
   if (priorityIdx === -1) priorityIdx = detectColumn(rows, dataStartRow, looksLikePriority)
   if (nameIdx === -1) nameIdx = detectColumn(rows, dataStartRow, looksLikeName)
+  if (passRiderIdx === -1) passRiderIdx = detectColumn(rows, dataStartRow, looksLikePassRider)
 
   const flights = []
 
@@ -153,9 +165,11 @@ function processRows(rows) {
     }
 
     const nameRaw = nameIdx >= 0 ? (row[nameIdx] || '').trim() : ''
+    const passRiderRaw = passRiderIdx >= 0 ? (row[passRiderIdx] || '').trim() : ''
     flights.push({
       id: i,
       person: nameRaw && looksLikeName(nameRaw) ? normalizeName(nameRaw) : '',
+      _suffix: passRiderRaw ? extractSuffix(passRiderRaw) : '',
       flightNo: flightNoIdx >= 0 ? (row[flightNoIdx] || '').trim() : '',
       dlFlightNo: dlFlightIdx >= 0 ? (row[dlFlightIdx] || '').trim() : '',
       priority: priorityIdx >= 0 ? (row[priorityIdx] || '').trim() : '',
@@ -174,5 +188,20 @@ function processRows(rows) {
   }
 
   if (flights.length === 0) throw new Error('No valid flight routes found in the CSV')
+
+  // Disambiguate people who share the same name code but have different pass rider suffixes
+  const nameSuffixes = {}
+  flights.forEach(f => {
+    if (!f.person || !f._suffix) return
+    if (!nameSuffixes[f.person]) nameSuffixes[f.person] = new Set()
+    nameSuffixes[f.person].add(f._suffix)
+  })
+  flights.forEach(f => {
+    if (f.person && f._suffix && nameSuffixes[f.person]?.size > 1) {
+      f.person = `${f.person} (${f._suffix})`
+    }
+    delete f._suffix
+  })
+
   return flights
 }
