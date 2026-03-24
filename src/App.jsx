@@ -51,7 +51,7 @@ export default function App() {
     const countries = new Set(filtered.flatMap(f => [f.originAirport?.country, f.destAirport?.country]).filter(Boolean)).size
 
     const lines = [
-      '✈️ NonRev Flight Tracker',
+      '✈️ NonRev Flight Explorer',
       '',
       `🛫 ${filtered.length.toLocaleString()} flights`,
       `🌍 ${timesAround}× around the world`,
@@ -121,7 +121,7 @@ export default function App() {
       <header className="dash-header">
         <div className="dash-title">
           <span className="logo-sm">✈</span>
-          <h1>NonRev Flight Tracker</h1>
+          <h1>NonRev Flight Explorer</h1>
         </div>
         <a
           className="bmc-btn"

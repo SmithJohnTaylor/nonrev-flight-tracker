@@ -19,7 +19,7 @@ export default function UploadZone({ onFile }) {
     <div className="upload-page">
       <div className="upload-header">
         <div className="logo">✈</div>
-        <h1>NonRev Flight Tracker</h1>
+        <h1>NonRev Flight Explorer</h1>
         <p className="subtitle">Calculate miles flown on your non-rev benefits</p>
       </div>
 
