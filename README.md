@@ -1,6 +1,6 @@
 # NonRev Flight Tracker
 
-An interactive web app for airline employees and their pass riders to calculate the total miles flown using non-rev travel benefits.
+[nonrevexporer.app](https://nonrevexplorer.app) is an interactive web app for airline employees and their pass riders to calculate the total miles flown using non-rev travel benefits.
 
 Upload your flight history CSV or Excel file and instantly see total miles flown, year-by-year breakdowns, a world route map, and a full searchable flight log — all without your data ever leaving your browser.
 
