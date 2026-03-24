@@ -1,17 +1,28 @@
+import { useState } from 'react'
+
 export default function PersonFilter({ people, selected, onChange }) {
+  const [open, setOpen] = useState(false)
+
+  function select(val) {
+    onChange(val)
+    setOpen(false)
+  }
+
+  const label = selected === 'all' ? 'All Travelers' : selected
+
   return (
     <div className="year-filter">
       <button
-        className={`year-btn ${selected === 'all' ? 'active' : ''}`}
-        onClick={() => onChange('all')}
+        className="year-btn active"
+        onClick={() => setOpen(o => !o)}
       >
-        All Travelers
+        {label} {open ? '▴' : '▾'}
       </button>
-      {people.map(p => (
+      {open && people.map(p => (
         <button
           key={p}
           className={`year-btn ${selected === p ? 'active' : ''}`}
-          onClick={() => onChange(p)}
+          onClick={() => select(p)}
         >
           {p}
         </button>
