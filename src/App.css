@@ -169,6 +169,17 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
 }
 .bmc-btn:hover { opacity: 0.85; }
 .file-stats { color: var(--muted); font-size: 0.85rem; }
+.share-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+.share-btn:hover { border-color: var(--primary); color: var(--primary); }
 .clear-btn {
   background: transparent;
   border: 1px solid var(--border);

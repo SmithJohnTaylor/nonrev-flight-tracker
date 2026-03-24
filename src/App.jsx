@@ -13,6 +13,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState('all')
   const [selectedPerson, setSelectedPerson] = useState('all')
+  const [shareLabel, setShareLabel] = useState('Share')
 
   // Clear all data from memory when the user leaves or refreshes the page
   useEffect(() => {
@@ -34,6 +35,32 @@ export default function App() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleShare() {
+    const withDist = filtered.filter(f => f.distanceMiles)
+    const totalMiles = withDist.reduce((s, f) => s + f.distanceMiles, 0)
+    const timesAround = (totalMiles / 24901).toFixed(1)
+    const longest = withDist.length
+      ? withDist.reduce((a, b) => a.distanceMiles > b.distanceMiles ? a : b)
+      : null
+    const uniqueAirports = new Set(filtered.flatMap(f => [f.origin, f.dest])).size
+    const countries = new Set(filtered.flatMap(f => [f.originAirport?.country, f.destAirport?.country]).filter(Boolean)).size
+
+    const lines = [
+      '✈️ NonRev Flight Tracker',
+      '',
+      `🛫 ${filtered.length.toLocaleString()} flights`,
+      `🌍 ${timesAround}× around the world`,
+      longest ? `📏 Longest: ${longest.route} · ${longest.distanceMiles.toLocaleString()} mi` : null,
+      `🏙️ ${uniqueAirports} airports · ${countries} countries`,
+      '',
+      'jtsmith.me/nonrev-flight-tracker',
+    ].filter(l => l !== null)
+
+    await navigator.clipboard.writeText(lines.join('\n'))
+    setShareLabel('Copied!')
+    setTimeout(() => setShareLabel('Share'), 2000)
   }
 
   function clearData() {
@@ -98,6 +125,9 @@ export default function App() {
           <span className="file-stats">
             {flights.length.toLocaleString()} flights loaded
           </span>
+          <button className="share-btn" onClick={handleShare}>
+            {shareLabel}
+          </button>
           <button className="clear-btn" onClick={clearData}>
             Clear Data
           </button>
