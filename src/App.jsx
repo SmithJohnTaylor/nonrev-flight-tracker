@@ -55,7 +55,7 @@ export default function App() {
       longest ? `📏 Longest: ${longest.route} · ${longest.distanceMiles.toLocaleString()} mi` : null,
       `🏙️ ${uniqueAirports} airports · ${countries} countries`,
       '',
-      'jtsmith.me/nonrev-flight-tracker',
+      window.location.origin + window.location.pathname,
     ].filter(l => l !== null)
 
     await navigator.clipboard.writeText(lines.join('\n'))
