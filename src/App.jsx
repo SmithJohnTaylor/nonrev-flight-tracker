@@ -6,6 +6,7 @@ import PersonFilter from './components/PersonFilter.jsx'
 import FlightTable from './components/FlightTable.jsx'
 import RouteMap from './components/RouteMap.jsx'
 import { parseFile } from './utils/parseFlights.js'
+import { encodeFlights, decodeFlights } from './utils/shareData.js'
 
 export default function App() {
   const [flights, setFlights] = useState(null)
@@ -13,6 +14,23 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [selectedYear, setSelectedYear] = useState('all')
   const [selectedPerson, setSelectedPerson] = useState('all')
+  const [isShared, setIsShared] = useState(false)
+  const [shareLabel, setShareLabel] = useState('Share')
+
+  // On mount, check for shared data in the URL hash
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash.startsWith('#share=')) return
+    const encoded = hash.slice(7)
+    setLoading(true)
+    decodeFlights(encoded)
+      .then(parsed => {
+        setFlights(parsed)
+        setIsShared(true)
+      })
+      .catch(() => setError('Could not load shared data — the link may be invalid or corrupted.'))
+      .finally(() => setLoading(false))
+  }, [])
 
   // Clear all data from memory when the user leaves or refreshes the page
   useEffect(() => {
@@ -29,8 +47,10 @@ export default function App() {
       setFlights(parsed)
       setSelectedYear('all')
       setSelectedPerson('all')
+      setIsShared(false)
+      window.location.hash = ''
     } catch (e) {
-      setError(e.message || 'Failed to parse CSV')
+      setError(e.message || 'Failed to parse file')
     } finally {
       setLoading(false)
     }
@@ -41,6 +61,21 @@ export default function App() {
     setError('')
     setSelectedYear('all')
     setSelectedPerson('all')
+    setIsShared(false)
+    window.location.hash = ''
+  }
+
+  async function handleShare() {
+    try {
+      const encoded = await encodeFlights(flights)
+      window.location.hash = `share=${encoded}`
+      await navigator.clipboard.writeText(window.location.href)
+      setShareLabel('Copied!')
+      setTimeout(() => setShareLabel('Share'), 2000)
+    } catch {
+      setShareLabel('Error')
+      setTimeout(() => setShareLabel('Share'), 2000)
+    }
   }
 
   const years = useMemo(() => {
@@ -65,7 +100,7 @@ export default function App() {
     return (
       <div className="loading-screen">
         <div className="spinner" />
-        <p>Parsing flights…</p>
+        <p>{isShared ? 'Loading shared data…' : 'Parsing flights…'}</p>
       </div>
     )
   }
@@ -98,11 +133,20 @@ export default function App() {
           <span className="file-stats">
             {flights.length.toLocaleString()} flights loaded
           </span>
+          <button className="share-btn" onClick={handleShare}>
+            {shareLabel}
+          </button>
           <button className="clear-btn" onClick={clearData}>
             Clear Data
           </button>
         </div>
       </header>
+
+      {isShared && (
+        <div className="shared-banner">
+          Viewing shared data &mdash; <button className="shared-banner-btn" onClick={clearData}>upload your own file</button> to start fresh
+        </div>
+      )}
 
       <main className="dash-main">
         {people.length > 1 && (
