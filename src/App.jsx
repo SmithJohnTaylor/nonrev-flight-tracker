@@ -50,8 +50,12 @@ export default function App() {
     const uniqueAirports = new Set(filtered.flatMap(f => [f.origin, f.dest])).size
     const countries = new Set(filtered.flatMap(f => [f.originAirport?.country, f.destAirport?.country]).filter(Boolean)).size
 
+    const activePeople = selectedPeople.length > 0 ? selectedPeople : people
+    const travelerLine = activePeople.length === 1 ? `👤 ${activePeople[0]}` : null
+
     const lines = [
       '✈️ NonRev Flight Explorer',
+      travelerLine,
       '',
       `🛫 ${filtered.length.toLocaleString()} flights`,
       `🌍 ${timesAround}× around the world`,
