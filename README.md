@@ -68,6 +68,14 @@ This app is designed to be safe to share with colleagues.
 
 ---
 
+## Airport Database
+
+The app includes coordinates for ~400 airports worldwide, covering major domestic and international routes. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
+
+To report a missing airport, open an issue with the IATA code and airport name.
+
+---
+
 ## Running Locally
 
 Requires [Node.js](https://nodejs.org) 18+.
@@ -89,14 +97,6 @@ npm run build
 # Preview the production build
 npm run preview
 ```
-
----
-
-## Airport Database
-
-The app includes coordinates for ~400 airports worldwide, covering major domestic and international routes. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
-
-To report a missing airport, open an issue with the IATA code and airport name.
 
 ---
 
