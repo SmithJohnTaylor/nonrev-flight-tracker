@@ -5,10 +5,10 @@ const BASE_COLUMNS = [
   { key: 'route', label: 'Route' },
   { key: 'originName', label: 'From' },
   { key: 'destName', label: 'To' },
-  { key: 'dlFlightNo', label: 'DL Flight' },
-  { key: 'priority', label: 'Priority' },
+  { key: 'dlFlightNo', label: 'DL Flight', mobileHide: true },
+  { key: 'priority', label: 'Priority', mobileHide: true },
   { key: 'distanceMiles', label: 'Miles' },
-  { key: 'distanceKm', label: 'km' },
+  { key: 'distanceKm', label: 'km', mobileHide: true },
 ]
 
 const PERSON_COLUMN = { key: 'person', label: 'Traveler' }
@@ -79,7 +79,7 @@ export default function FlightTable({ flights, multiPerson }) {
           <thead>
             <tr>
               {COLUMNS.map(c => (
-                <th key={c.key} onClick={() => handleSort(c.key)} className="sortable-th">
+                <th key={c.key} onClick={() => handleSort(c.key)} className={`sortable-th${c.mobileHide ? ' mobile-hide' : ''}`}>
                   {c.label} {arrowFor(c.key)}
                 </th>
               ))}
@@ -89,7 +89,7 @@ export default function FlightTable({ flights, multiPerson }) {
             {pageFlights.map(f => (
               <tr key={f.id} className={f.unknownAirport ? 'unknown-row' : ''}>
                 {COLUMNS.map(c => (
-                  <td key={c.key}>{getValue(f, c.key)}</td>
+                  <td key={c.key} className={c.mobileHide ? 'mobile-hide' : ''}>{getValue(f, c.key)}</td>
                 ))}
               </tr>
             ))}

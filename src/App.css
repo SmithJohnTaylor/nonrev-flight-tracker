@@ -343,4 +343,5 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
   .year-breakdown-row { grid-template-columns: 50px 90px 1fr; }
   .yb-miles { display: none; }
   .map-container { height: 300px; }
+  .mobile-hide { display: none; }
 }
