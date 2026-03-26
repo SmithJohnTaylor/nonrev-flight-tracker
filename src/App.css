@@ -298,6 +298,48 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
   margin-left: 16px;
 }
 
+/* ─── Table Filters ─────────────────────────────────────────────────────────── */
+.table-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.table-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.table-filter-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.table-filter-field input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  width: 160px;
+  outline: none;
+}
+.table-filter-field input:focus { border-color: var(--primary); }
+.filter-clear-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+.filter-clear-btn:hover { border-color: var(--primary); color: var(--primary); }
+
 /* ─── Table ─────────────────────────────────────────────────────────────────── */
 .table-section-wrap {}
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }

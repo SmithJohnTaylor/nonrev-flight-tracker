@@ -31,11 +31,20 @@ function sortFlights(flights, key, dir) {
 
 const PAGE_SIZE = 50
 
+function matchesAirport(query, iata, airport) {
+  const q = query.toLowerCase()
+  if (iata?.toLowerCase().includes(q)) return true
+  if (airport?.city?.toLowerCase().includes(q)) return true
+  return false
+}
+
 export default function FlightTable({ flights, multiPerson }) {
   const COLUMNS = multiPerson ? [PERSON_COLUMN, ...BASE_COLUMNS] : BASE_COLUMNS
   const [sortKey, setSortKey] = useState('date')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
+  const [fromFilter, setFromFilter] = useState('')
+  const [toFilter, setToFilter] = useState('')
 
   function handleSort(key) {
     if (key === sortKey) {
@@ -47,7 +56,16 @@ export default function FlightTable({ flights, multiPerson }) {
     setPage(1)
   }
 
-  const sorted = sortFlights(flights, sortKey, sortDir)
+  function handleFromFilter(val) { setFromFilter(val); setPage(1) }
+  function handleToFilter(val) { setToFilter(val); setPage(1) }
+
+  const filtered = flights.filter(f => {
+    if (fromFilter && !matchesAirport(fromFilter, f.origin, f.originAirport)) return false
+    if (toFilter && !matchesAirport(toFilter, f.dest, f.destAirport)) return false
+    return true
+  })
+
+  const sorted = sortFlights(filtered, sortKey, sortDir)
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
   const pageFlights = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
@@ -74,6 +92,31 @@ export default function FlightTable({ flights, multiPerson }) {
 
   return (
     <div className="table-section">
+      <div className="table-filters">
+        <div className="table-filter-field">
+          <label>From</label>
+          <input
+            type="text"
+            placeholder="IATA or city…"
+            value={fromFilter}
+            onChange={e => handleFromFilter(e.target.value)}
+          />
+        </div>
+        <div className="table-filter-field">
+          <label>To</label>
+          <input
+            type="text"
+            placeholder="IATA or city…"
+            value={toFilter}
+            onChange={e => handleToFilter(e.target.value)}
+          />
+        </div>
+        {(fromFilter || toFilter) && (
+          <button className="filter-clear-btn" onClick={() => { handleFromFilter(''); handleToFilter('') }}>
+            Clear
+          </button>
+        )}
+      </div>
       <div className="table-wrap">
         <table className="flight-table">
           <thead>
@@ -103,7 +146,7 @@ export default function FlightTable({ flights, multiPerson }) {
             ‹ Prev
           </button>
           <span>
-            Page {page} of {totalPages} &nbsp;·&nbsp; {flights.length.toLocaleString()} flights
+            Page {page} of {totalPages} &nbsp;·&nbsp; {sorted.length.toLocaleString()}{sorted.length !== flights.length ? ` of ${flights.length.toLocaleString()}` : ''} flights
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
