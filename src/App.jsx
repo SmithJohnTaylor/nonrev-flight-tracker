@@ -7,6 +7,7 @@ import PriorityFilter from './components/PriorityFilter.jsx'
 import FlightTable from './components/FlightTable.jsx'
 import RouteMap from './components/RouteMap.jsx'
 import { parseFile } from './utils/parseFlights.js'
+import FeedbackModal from './components/FeedbackModal.jsx'
 
 export default function App() {
   const [flights, setFlights] = useState(null)
@@ -16,6 +17,7 @@ export default function App() {
   const [selectedPeople, setSelectedPeople] = useState([])
   const [selectedPriorities, setSelectedPriorities] = useState([])
   const [shareLabel, setShareLabel] = useState('Share')
+  const [showFeedback, setShowFeedback] = useState(false)
 
   // Clear all data from memory when the user leaves or refreshes the page
   useEffect(() => {
@@ -173,7 +175,13 @@ export default function App() {
 
       <footer className="dash-footer">
         🔒 No data is stored or transmitted — everything runs in your browser.
+        <span className="footer-sep">·</span>
+        <button className="feedback-trigger" onClick={() => setShowFeedback(true)}>
+          Feedback & Feature Requests
+        </button>
       </footer>
+
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </div>
   )
 }

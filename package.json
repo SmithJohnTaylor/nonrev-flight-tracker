@@ -10,6 +10,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@formspree/react": "^3.0.0",
     "leaflet": "^1.9.4",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
