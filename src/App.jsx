@@ -151,19 +151,24 @@ export default function App() {
       </header>
 
       <main className="dash-main">
-        {people.length > 1 && (
-          <PersonFilter people={people} selected={selectedPeople} onChange={setSelectedPeople} />
-        )}
+        <div className="stats-filters-row">
+          <aside className="filters-sidebar">
+            <h2 className="section-title">Filters</h2>
+            {people.length > 1 && (
+              <PersonFilter people={people} selected={selectedPeople} onChange={setSelectedPeople} />
+            )}
 
-        {years.length > 1 && (
-          <YearFilter years={years} selected={selectedYear} onChange={setSelectedYear} />
-        )}
+            {years.length > 1 && (
+              <YearFilter years={years} selected={selectedYear} onChange={setSelectedYear} />
+            )}
 
-        {priorities.length > 1 && (
-          <PriorityFilter priorities={priorities} selected={selectedPriorities} onChange={setSelectedPriorities} />
-        )}
+            {priorities.length > 1 && (
+              <PriorityFilter priorities={priorities} selected={selectedPriorities} onChange={setSelectedPriorities} />
+            )}
+          </aside>
 
-        <StatsPanel flights={filtered} allFlights={flights} selectedYear={selectedYear} />
+          <StatsPanel flights={filtered} allFlights={flights} selectedYear={selectedYear} />
+        </div>
 
         <RouteMap flights={filtered} />
 

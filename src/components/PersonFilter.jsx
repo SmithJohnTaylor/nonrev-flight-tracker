@@ -1,52 +1,55 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 export default function PersonFilter({ people, selected, onChange }) {
   const [open, setOpen] = useState(false)
+  const ref = useRef()
+
+  useEffect(() => {
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   function toggle(val) {
     if (selected.includes(val)) {
-      const next = selected.filter(p => p !== val)
-      onChange(next)
+      onChange(selected.filter(p => p !== val))
     } else {
       onChange([...selected, val])
     }
   }
 
-  function selectAll() {
-    onChange([])
-    setOpen(false)
-  }
-
   let label = 'All Travelers'
   if (selected.length === 1) label = selected[0]
-  else if (selected.length > 1) label = `${selected.length} travelers`
+  else if (selected.length > 1) label = `${selected.length} selected`
 
   return (
-    <div className="year-filter">
-      <button
-        className="year-btn active"
-        onClick={() => setOpen(o => !o)}
-      >
-        {label} {open ? '▴' : '▾'}
+    <div className="filter-field" ref={ref}>
+      <label>Traveler</label>
+      <button className="filter-select" onClick={() => setOpen(o => !o)}>
+        <span className="filter-select-label">{label}</span>
+        <span className="filter-select-arrow">{open ? '▴' : '▾'}</span>
       </button>
       {open && (
-        <>
-          <button
-            className={`year-btn ${selected.length === 0 ? 'active' : ''}`}
-            onClick={selectAll}
-          >
+        <div className="filter-dropdown">
+          <label className="filter-option">
+            <input
+              type="checkbox"
+              checked={selected.length === 0}
+              onChange={() => onChange([])}
+            />
             All
-          </button>
+          </label>
           {people.map(p => (
-            <button
-              key={p}
-              className={`year-btn ${selected.includes(p) ? 'active' : ''}`}
-              onClick={() => toggle(p)}
-            >
+            <label key={p} className="filter-option">
+              <input
+                type="checkbox"
+                checked={selected.includes(p)}
+                onChange={() => toggle(p)}
+              />
               {p}
-            </button>
+            </label>
           ))}
-        </>
+        </div>
       )}
     </div>
   )

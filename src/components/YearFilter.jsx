@@ -1,32 +1,17 @@
-import { useState } from 'react'
-
 export default function YearFilter({ years, selected, onChange }) {
-  const [open, setOpen] = useState(false)
-
-  function select(val) {
-    onChange(selected === val ? 'all' : val)
-    setOpen(false)
-  }
-
-  const label = selected === 'all' ? 'All Years' : selected
-
   return (
-    <div className="year-filter">
-      <button
-        className="year-btn active"
-        onClick={() => setOpen(o => !o)}
+    <div className="filter-field">
+      <label htmlFor="year-filter">Year</label>
+      <select
+        id="year-filter"
+        value={selected}
+        onChange={e => onChange(e.target.value === 'all' ? 'all' : Number(e.target.value))}
       >
-        {label} {open ? '▴' : '▾'}
-      </button>
-      {open && years.map(y => (
-        <button
-          key={y}
-          className={`year-btn ${selected === y ? 'active' : ''}`}
-          onClick={() => select(y)}
-        >
-          {y}
-        </button>
-      ))}
+        <option value="all">All Years</option>
+        {years.map(y => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
     </div>
   )
 }
