@@ -22,8 +22,10 @@ Upload your flight history CSV or Excel file and instantly see total miles flown
 - **Distance calculation** — great-circle miles and kilometers for every route
 - **Stats dashboard** — total flights, total miles, unique airports, countries visited, longest flight, and more
 - **Year-by-year breakdown** — filter by any year to see annual totals
-- **Route map** — interactive world map with great-circle arcs; thicker lines and larger dots indicate more frequently flown routes
-- **Flight log** — full sortable table of every flight with date, route, flight number, priority, and distance
+- **Filters** — filter by traveler, year, and priority class with dropdown selectors (multi-select for traveler and priority)
+- **Route map** — interactive Mapbox GL globe with great-circle arcs; thicker lines and larger dots indicate more frequently flown routes
+- **Flight log** — full sortable, filterable table of every flight with date, route, flight number, priority, and distance
+- **Feedback form** — built-in feedback and feature request form (powered by Formspree)
 - **100% private** — no data is uploaded, stored, or transmitted; everything runs in your browser and is cleared when you close the tab
 
 ---
@@ -49,8 +51,9 @@ Drop the file onto the upload zone or click to browse. The app auto-detects colu
 
 ### 3. Explore your results
 
-- Use the **year filter** at the top to drill into a specific year
+- Use the **filter dropdowns** on the left to narrow by traveler, year, or priority
 - Click any **column header** in the flight log to sort
+- Use the **From/To inputs** above the flight log to filter by airport
 - Click **airport dots** on the map for details
 - Click **Clear Data** in the header when you're done — this wipes all data from memory immediately
 
@@ -64,15 +67,15 @@ This app is designed to be safe to share with colleagues.
 - Personal information (names, employee IDs) is **discarded immediately** during parsing and never stored in memory
 - No cookies, no local storage, no analytics, no third-party tracking
 - Flight data is cleared automatically when you close or refresh the tab
-- The only external requests are map tile images from [CARTO](https://carto.com) — these contain no user data
+- The only external requests are map tiles from [Mapbox](https://www.mapbox.com) — these contain no user data
 
 ---
 
 ## Airport Database
 
-The app includes coordinates for ~400 airports worldwide, covering major domestic and international routes. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
+The app includes coordinates for 600+ airports worldwide, covering all Delta Air Lines destinations and major international routes. If a route contains an airport not in the database, the distance will show as `—` but the flight will still appear in the log and on the map.
 
-To report a missing airport, open an issue with the IATA code and airport name.
+To report a missing airport, use the in-app feedback form or open an issue with the IATA code and airport name.
 
 ---
 
@@ -83,6 +86,9 @@ Requires [Node.js](https://nodejs.org) 18+.
 ```bash
 # Install dependencies
 npm install
+
+# Create a .env file with your Mapbox token
+echo "VITE_MAPBOX_TOKEN=your_mapbox_public_token" > .env
 
 # Start development server
 npm run dev
@@ -103,6 +109,6 @@ npm run preview
 ## Tech Stack
 
 - [React](https://react.dev) + [Vite](https://vitejs.dev)
-- [Leaflet](https://leafletjs.com) + [React Leaflet](https://react-leaflet.js.org) for the route map
+- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) + [react-map-gl](https://visgl.github.io/react-map-gl/) for the route map
 - [PapaParse](https://www.papaparse.com) for CSV parsing
-- [CARTO](https://carto.com) dark map tiles
+- [Formspree](https://formspree.io) for feedback form submissions
